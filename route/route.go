@@ -1,6 +1,7 @@
 package route
 
 import (
+	"be-go-fiber-ecommerce/auth"
 	"be-go-fiber-ecommerce/models"
 
 	"github.com/gofiber/fiber/v2"
@@ -13,6 +14,10 @@ func SetupRoutes(app *fiber.App, db *gorm.DB) {
 			"Project": "Fish E-Commerce",
 			"Dev":     "Rickyslash",
 		})
+	})
+
+	app.Post("/register", func(c *fiber.Ctx) error {
+		return auth.RegisterHandler(c, db)
 	})
 
 	v1 := app.Group("/v1")

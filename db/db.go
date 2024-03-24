@@ -33,6 +33,7 @@ func migrateDB(db *gorm.DB) {
 	db.AutoMigrate(
 		&models.Product{},
 		&models.Category{},
+		&models.User{},
 	)
 
 	SeedData(db)
