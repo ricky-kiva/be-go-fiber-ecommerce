@@ -38,12 +38,20 @@ func SetupRoutes(app *fiber.App, db *gorm.DB) {
 		return c.JSON(products)
 	})
 
-	v1.Get("/products/:productId", func(c *fiber.Ctx) error {
+	v1.Get("/products/info", func(c *fiber.Ctx) error {
 		var product models.Product
 
-		productId := c.Params("productId")
+		productId := c.Query("id")
+		if productId == "" {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"message": "Product ID is required",
+			})
+		}
+
 		if result := db.First(&product, productId); result.Error != nil {
-			return c.Status(fiber.StatusNotFound).JSON(result.Error)
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+				"message": "Product not found",
+			})
 		}
 
 		return c.JSON(product)
