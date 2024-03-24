@@ -1,18 +1,17 @@
 package main
 
 import (
+	"be-go-fiber-ecommerce/db"
+	"be-go-fiber-ecommerce/route"
+
 	"github.com/gofiber/fiber/v2"
 )
 
 func main() {
 	app := fiber.New()
+	db := db.InitDb()
 
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.JSON(fiber.Map{
-			"Pink Floyd": "The Wall",
-			"Queen":      "Bohemian Rhapsody",
-		})
-	})
+	route.SetupRoutes(app, db)
 
 	app.Listen(":8080")
 }
