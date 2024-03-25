@@ -50,18 +50,40 @@ func (h *Handler) AddToCart(c *fiber.Ctx) error {
 	err := h.DB.Where("cart_id = ? AND product_id = ?", cart.ID, cartInput.ProductID).First(&cartItem).Error
 	if err == nil {
 		cartItem.Quantity += cartInput.Quantity
-		h.DB.Save(&cartItem)
-	} else if err == gorm.ErrRecordNotFound {
-		cartItem = models.CartItem{
-			CartID:    cart.ID,
-			ProductID: cartInput.ProductID,
-			Quantity:  cartInput.Quantity,
-		}
 
-		if err := h.DB.Create(&cartItem).Error; err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+		if cartItem.Quantity <= 0 {
+			if err := h.DB.Delete(&cartItem).Error; err != nil {
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"status":  "error",
+					"message": "Could not delete item from cart",
+				})
+			}
+		} else {
+			if err := h.DB.Save(&cartItem).Error; err != nil {
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"status":  "error",
+					"message": "Could not update item in cart",
+				})
+			}
+		}
+	} else if err == gorm.ErrRecordNotFound {
+		if cartInput.Quantity > 0 {
+			cartItem = models.CartItem{
+				CartID:    cart.ID,
+				ProductID: cartInput.ProductID,
+				Quantity:  cartInput.Quantity,
+			}
+
+			if err := h.DB.Create(&cartItem).Error; err != nil {
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"status":  "error",
+					"message": "Could not add item to cart",
+				})
+			}
+		} else {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 				"status":  "error",
-				"message": "Could not add item to cart",
+				"message": "Item quantity must be greater than 0",
 			})
 		}
 	} else {
@@ -84,7 +106,7 @@ func (h *Handler) GetCart(c *fiber.Ctx) error {
 	if err := h.DB.Where("user_id = ?", userId).First(&cart).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"status":  "error",
-			"message": "Cart not found",
+			"message": "Cart was not initialized. Please add items",
 		})
 	}
 
