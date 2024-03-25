@@ -105,7 +105,7 @@ func (h *Handler) GetCart(c *fiber.Ctx) error {
 	var cart models.Cart
 	if err := h.DB.Where("user_id = ?", userId).First(&cart).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status":  "error",
+			"status":  "fail",
 			"message": "Cart was not initialized. Please add items",
 		})
 	}
@@ -115,6 +115,13 @@ func (h *Handler) GetCart(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"status":  "error",
 			"message": "Could not load cart items",
+		})
+	}
+
+	if len(cartItems) == 0 {
+		return c.JSON(fiber.Map{
+			"status":  "success",
+			"message": "Your cart is empty",
 		})
 	}
 
