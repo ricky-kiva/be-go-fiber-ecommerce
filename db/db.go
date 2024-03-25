@@ -34,6 +34,8 @@ func migrateDB(db *gorm.DB) {
 		&models.Product{},
 		&models.Category{},
 		&models.User{},
+		&models.Cart{},
+		&models.CartItem{},
 	)
 
 	SeedData(db)
