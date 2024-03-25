@@ -32,6 +32,7 @@ func SetupRoutes(app *fiber.App, db *gorm.DB) {
 
 	app.Get("/cart", middleware.AuthValidator, middleware.AuthUserIdExtraction, h.GetCart)
 	app.Post("/cart", middleware.AuthValidator, middleware.AuthUserIdExtraction, h.AddToCart)
+	app.Delete("/cart/items/:productID", middleware.AuthValidator, middleware.AuthUserIdExtraction, h.DeleteCartItem)
 
 	v1.Get("/products", func(c *fiber.Ctx) error {
 		var products []models.Product

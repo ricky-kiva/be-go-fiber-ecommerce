@@ -127,3 +127,31 @@ func (h *Handler) GetCart(c *fiber.Ctx) error {
 
 	return c.JSON(cartItems)
 }
+
+func (h *Handler) DeleteCartItem(c *fiber.Ctx) error {
+	userId := c.Locals("userID").(uint)
+	productId, err := c.ParamsInt("productID")
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"status":  "error",
+			"message": "Invalid product ID",
+		})
+	}
+
+	var cart models.Cart
+	if err := h.DB.Where("user_id = ?", userId).First(&cart).Error; err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"status":  "error",
+			"message": "Cart was not initialized. Please add items",
+		})
+	}
+
+	if err := h.DB.Where("cart_id = ? AND product_id = ?", cart.ID, productId).Delete(&models.CartItem{}).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"status":  "error",
+			"message": "Could not delete cart item",
+		})
+	}
+
+	return c.Status(fiber.StatusNoContent).Send(nil)
+}
