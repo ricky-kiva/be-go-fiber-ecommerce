@@ -20,6 +20,10 @@ func SetupRoutes(app *fiber.App, db *gorm.DB) {
 		return auth.RegisterHandler(c, db)
 	})
 
+	app.Post("/login", func(c *fiber.Ctx) error {
+		return auth.LoginHandler(c, db)
+	})
+
 	v1 := app.Group("/v1")
 
 	v1.Get("/products", func(c *fiber.Ctx) error {
