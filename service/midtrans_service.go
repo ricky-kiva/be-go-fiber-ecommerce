@@ -7,5 +7,5 @@ import (
 )
 
 type MidtransService interface {
-	Create(c *fiber.Ctx, request web.MidtransRequest) web.MidtransResponse
+	CartTransaction(c *fiber.Ctx) (web.MidtransResponse, error)
 }

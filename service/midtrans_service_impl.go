@@ -1,78 +1,92 @@
 package service
 
 import (
-	"be-go-fiber-ecommerce/helper"
+	"be-go-fiber-ecommerce/models"
 	"be-go-fiber-ecommerce/models/web"
+	"fmt"
 	"os"
-	"strconv"
+	"time"
 
-	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
+	"github.com/jinzhu/gorm"
 	"github.com/midtrans/midtrans-go"
 	"github.com/midtrans/midtrans-go/snap"
 )
 
 type MidtransServiceImpl struct {
-	Validate *validator.Validate
+	DB *gorm.DB
 }
 
-func NewMidTransServiceImpl(validate *validator.Validate) *MidtransServiceImpl {
+func NewMidTransServiceImpl(db *gorm.DB) *MidtransServiceImpl {
 	return &MidtransServiceImpl{
-		Validate: validate,
+		DB: db,
 	}
 }
 
-func (service *MidtransServiceImpl) Create(c *fiber.Ctx, request web.MidtransRequest) web.MidtransResponse {
-	err := service.Validate.Struct(request)
-	if err != nil {
-		helper.PanicIfError(err)
+func (service *MidtransServiceImpl) CartTransaction(c *fiber.Ctx) (web.MidtransResponse, error) {
+	var totalGross int64
+	userId := c.Locals("userID").(uint)
+
+	var user models.User
+	if err := service.DB.Preload("Cart.Items.Product.Category").First(&user, userId).Error; err != nil {
+		return web.MidtransResponse{}, fmt.Errorf("user not found or Cart haven't initialized")
 	}
+
+	itemsDetails := make([]midtrans.ItemDetails, 0)
+	for _, item := range user.Cart.Items {
+		totalGross += int64(item.Quantity) * int64(item.Product.Price)
+
+		itemsDetails = append(itemsDetails, midtrans.ItemDetails{
+			ID:       fmt.Sprintf("Property-%d", item.ProductID),
+			Name:     item.Product.Name,
+			Price:    int64(item.Product.Price),
+			Qty:      int32(item.Quantity),
+			Category: item.Product.Category.Name,
+		})
+	}
+
+	orderSuffix := fmt.Sprintf("%d", time.Now().UnixNano())
 
 	var snapClient = snap.Client{}
 	snapClient.New(os.Getenv("MIDTRANS_SERVER_KEY"), midtrans.Sandbox)
 
-	userId := strconv.Itoa(request.UserId)
-
 	custAddress := &midtrans.CustomerAddress{
-		FName:       "John",
-		LName:       "Lennon",
-		Phone:       "085111222333",
-		Address:     "Jl. Grafika no. 2",
+		FName:       extractEmailUsername(user.Email),
+		LName:       "Synapsis",
+		Phone:       "085311111010",
+		Address:     "St. Kerto No. 4",
 		City:        "Yogyakarta",
-		Postcode:    "55284",
+		Postcode:    "55165",
 		CountryCode: "IDN",
 	}
 
 	req := &snap.Request{
 		TransactionDetails: midtrans.TransactionDetails{
-			OrderID:  "MID-User" + userId + "-" + request.ItemID,
-			GrossAmt: request.Amount,
+			OrderID:  fmt.Sprintf("MID-User%d-Order-%s", userId, orderSuffix),
+			GrossAmt: totalGross,
 		},
 		CreditCard: &snap.CreditCardDetails{
 			Secure: true,
 		},
 		CustomerDetail: &midtrans.CustomerDetails{
-			FName:    "John",
-			LName:    "Lennon",
-			Email:    "john@gmail.com",
-			Phone:    "085111222333",
+			FName:    extractEmailUsername(user.Email),
+			LName:    "Synapsis",
+			Email:    "info@synapsis.id",
+			Phone:    "085311111010",
 			BillAddr: custAddress,
 			ShipAddr: custAddress,
 		},
 		EnabledPayments: snap.AllSnapPaymentType,
-		Items: &[]midtrans.ItemDetails{
-			{
-				ID:    "Property-" + request.ItemID,
-				Qty:   1,
-				Price: request.Amount,
-				Name:  request.ItemName,
-			},
-		},
+		Items:           &itemsDetails,
 	}
 
 	response, errSnap := snapClient.CreateTransaction(req)
 	if errSnap != nil {
-		helper.PanicIfError(errSnap.GetRawError())
+		return web.MidtransResponse{}, fmt.Errorf(errSnap.Message)
+	}
+
+	if err := service.DB.Where("cart_id = ?", user.Cart.ID).Delete(&models.CartItem{}).Error; err != nil {
+		return web.MidtransResponse{}, fmt.Errorf("error clearing cart items")
 	}
 
 	midtransResponse := web.MidtransResponse{
@@ -80,5 +94,5 @@ func (service *MidtransServiceImpl) Create(c *fiber.Ctx, request web.MidtransReq
 		RedirectUrl: response.RedirectURL,
 	}
 
-	return midtransResponse
+	return midtransResponse, nil
 }

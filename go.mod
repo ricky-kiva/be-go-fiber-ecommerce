@@ -2,21 +2,16 @@ module be-go-fiber-ecommerce
 
 go 1.21.4
 
-require github.com/jinzhu/gorm v1.9.16
-
 require (
-	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
-	github.com/go-playground/locales v0.14.1 // indirect
-	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/leodido/go-urn v1.4.0 // indirect
-	golang.org/x/net v0.21.0 // indirect
-	golang.org/x/text v0.14.0 // indirect
+	github.com/jinzhu/gorm v1.9.16
+	golang.org/x/text v0.14.0
 )
+
+require github.com/stretchr/testify v1.8.4 // indirect
 
 require (
 	github.com/andybalholm/brotli v1.0.5 // indirect
-	github.com/go-playground/validator/v10 v10.19.0
-	github.com/gofiber/fiber/v2 v2.52.2 // indirect
+	github.com/gofiber/fiber/v2 v2.52.2
 	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/google/uuid v1.5.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect

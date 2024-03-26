@@ -8,5 +8,6 @@ type Product struct {
 	Description string
 	Price       float64
 	Stock       int
+	Category    Category
 	CategoryID  uint
 }
