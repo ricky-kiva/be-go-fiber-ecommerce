@@ -81,7 +81,7 @@ func (h *Handler) UserLogin(c *fiber.Ctx) error {
 	}
 
 	claims := jwt.RegisteredClaims{
-		ExpiresAt: jwt.NewNumericDate(time.Now().Add(5 * time.Minute)),
+		ExpiresAt: jwt.NewNumericDate(time.Now().Add(10 * time.Minute)),
 		Issuer:    "rickyslash.my.id",
 		IssuedAt:  jwt.NewNumericDate(time.Now()),
 	}
