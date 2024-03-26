@@ -14,7 +14,10 @@ func (h *Handler) UserRegister(c *fiber.Ctx) error {
 	var data map[string]string
 
 	if err := c.BodyParser(&data); err != nil {
-		return err
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"status":  "error",
+			"message": err.Error(),
+		})
 	}
 
 	if !isEmailValid(data["email"]) {
@@ -60,7 +63,10 @@ func (h *Handler) UserLogin(c *fiber.Ctx) error {
 	var data map[string]string
 
 	if err := c.BodyParser(&data); err != nil {
-		return err
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"status":  "error",
+			"message": err.Error(),
+		})
 	}
 
 	var user models.User
