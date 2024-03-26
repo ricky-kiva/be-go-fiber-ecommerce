@@ -1,7 +1,8 @@
 package handler
 
 import (
-	"be-go-fiber-ecommerce/models"
+	"be-go-fiber-ecommerce/entity"
+	// "be-go-fiber-ecommerce/model"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/jinzhu/gorm"
@@ -22,7 +23,7 @@ func (h *Handler) AddToCart(c *fiber.Ctx) error {
 		})
 	}
 
-	var product models.Product
+	var product entity.Product
 	if err := h.DB.First(&product, cartInput.ProductID).Error; err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 			"status":  "error",
@@ -30,15 +31,15 @@ func (h *Handler) AddToCart(c *fiber.Ctx) error {
 		})
 	}
 
-	var cart models.Cart
-	if err := h.DB.FirstOrCreate(&cart, models.Cart{UserID: userId}).Error; err != nil {
+	var cart entity.Cart
+	if err := h.DB.FirstOrCreate(&cart, entity.Cart{UserID: userId}).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"status":  "error",
 			"message": "Could not find or create cart",
 		})
 	}
 
-	var cartItem models.CartItem
+	var cartItem entity.CartItem
 	err := h.DB.Where("cart_id = ? AND product_id = ?", cart.ID, cartInput.ProductID).First(&cartItem).Error
 	if err == nil {
 		cartItem.Quantity += cartInput.Quantity
@@ -60,7 +61,7 @@ func (h *Handler) AddToCart(c *fiber.Ctx) error {
 		}
 	} else if err == gorm.ErrRecordNotFound {
 		if cartInput.Quantity > 0 {
-			cartItem = models.CartItem{
+			cartItem = entity.CartItem{
 				CartID:    cart.ID,
 				ProductID: cartInput.ProductID,
 				Quantity:  cartInput.Quantity,
@@ -94,7 +95,7 @@ func (h *Handler) AddToCart(c *fiber.Ctx) error {
 func (h *Handler) GetCart(c *fiber.Ctx) error {
 	userId := c.Locals("userID").(uint)
 
-	var cart models.Cart
+	var cart entity.Cart
 	if err := h.DB.Where("user_id = ?", userId).First(&cart).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"status":  "fail",
@@ -102,7 +103,7 @@ func (h *Handler) GetCart(c *fiber.Ctx) error {
 		})
 	}
 
-	var cartItems []models.CartItem
+	var cartItems []entity.CartItem
 	if err := h.DB.Where("cart_id = ?", cart.ID).Preload("Product").Find(&cartItems).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"status":  "error",
@@ -130,7 +131,7 @@ func (h *Handler) DeleteCartItem(c *fiber.Ctx) error {
 		})
 	}
 
-	var cart models.Cart
+	var cart entity.Cart
 	if err := h.DB.Where("user_id = ?", userId).First(&cart).Error; err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 			"status":  "error",
@@ -138,7 +139,7 @@ func (h *Handler) DeleteCartItem(c *fiber.Ctx) error {
 		})
 	}
 
-	if err := h.DB.Where("cart_id = ? AND product_id = ?", cart.ID, productId).Delete(&models.CartItem{}).Error; err != nil {
+	if err := h.DB.Where("cart_id = ? AND product_id = ?", cart.ID, productId).Delete(&entity.CartItem{}).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"status":  "error",
 			"message": "Could not delete cart item",
@@ -147,3 +148,17 @@ func (h *Handler) DeleteCartItem(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusNoContent).Send(nil)
 }
+
+// func (h *Handler) Checkout(c *fiber.Ctx) error {
+// 	userId := c.Locals("userID").(uint)
+
+// 	var user entity.User
+// 	if err := h.DB.Preload("Cart.Items.Product").First(&user, userId).Error; err != nil {
+// 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+// 			"status": "error",
+// 			"message": err.Error(),
+// 		})
+// 	}
+
+// 	// response := model.CheckoutItem
+// }

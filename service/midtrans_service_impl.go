@@ -1,8 +1,8 @@
 package service
 
 import (
-	"be-go-fiber-ecommerce/models"
-	"be-go-fiber-ecommerce/models/web"
+	"be-go-fiber-ecommerce/entity"
+	"be-go-fiber-ecommerce/model"
 	"fmt"
 	"os"
 	"time"
@@ -23,13 +23,13 @@ func NewMidTransServiceImpl(db *gorm.DB) *MidtransServiceImpl {
 	}
 }
 
-func (service *MidtransServiceImpl) CartTransaction(c *fiber.Ctx) (web.MidtransResponse, error) {
+func (service *MidtransServiceImpl) CartTransaction(c *fiber.Ctx) (model.MidtransResponse, error) {
 	var totalGross int64
 	userId := c.Locals("userID").(uint)
 
-	var user models.User
+	var user entity.User
 	if err := service.DB.Preload("Cart.Items.Product.Category").First(&user, userId).Error; err != nil {
-		return web.MidtransResponse{}, fmt.Errorf("user not found or Cart haven't initialized")
+		return model.MidtransResponse{}, fmt.Errorf("user not found or Cart haven't initialized")
 	}
 
 	itemsDetails := make([]midtrans.ItemDetails, 0)
@@ -82,14 +82,14 @@ func (service *MidtransServiceImpl) CartTransaction(c *fiber.Ctx) (web.MidtransR
 
 	response, errSnap := snapClient.CreateTransaction(req)
 	if errSnap != nil {
-		return web.MidtransResponse{}, fmt.Errorf(errSnap.Message)
+		return model.MidtransResponse{}, fmt.Errorf(errSnap.Message)
 	}
 
-	if err := service.DB.Where("cart_id = ?", user.Cart.ID).Delete(&models.CartItem{}).Error; err != nil {
-		return web.MidtransResponse{}, fmt.Errorf("error clearing cart items")
+	if err := service.DB.Where("cart_id = ?", user.Cart.ID).Delete(&entity.CartItem{}).Error; err != nil {
+		return model.MidtransResponse{}, fmt.Errorf("error clearing cart items")
 	}
 
-	midtransResponse := web.MidtransResponse{
+	midtransResponse := model.MidtransResponse{
 		Token:       response.Token,
 		RedirectUrl: response.RedirectURL,
 	}

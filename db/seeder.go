@@ -1,26 +1,26 @@
 package db
 
 import (
-	"be-go-fiber-ecommerce/models"
+	"be-go-fiber-ecommerce/entity"
 	"fmt"
 
 	"github.com/jinzhu/gorm"
 )
 
 func SeedData(db *gorm.DB) {
-	category := models.Category{}
+	category := entity.Category{}
 	if db.Find(&category).RecordNotFound() {
 		seedCategories(db)
 	}
 
-	product := models.Product{}
+	product := entity.Product{}
 	if db.Find(&product).RecordNotFound() {
 		seedProducts(db)
 	}
 }
 
 func seedCategories(db *gorm.DB) {
-	categories := []models.Category{
+	categories := []entity.Category{
 		{Name: "Saltwater"},
 		{Name: "Freshwater"},
 		{Name: "Anemones"},
@@ -28,7 +28,7 @@ func seedCategories(db *gorm.DB) {
 	}
 
 	for _, category := range categories {
-		db.FirstOrCreate(&category, models.Category{Name: category.Name})
+		db.FirstOrCreate(&category, entity.Category{Name: category.Name})
 	}
 }
 
@@ -127,16 +127,16 @@ func seedProducts(db *gorm.DB) {
 	}
 
 	for _, p_temp := range products {
-		var category models.Category
+		var category entity.Category
 
 		if err := db.Where("name = ?", p_temp.CategoryName).First(&category).Error; err != nil {
 			fmt.Println("Error finding category for product:", p_temp.Name)
 			continue
 		}
 
-		product := models.Product{}
+		product := entity.Product{}
 
-		db.FirstOrCreate(&product, models.Product{
+		db.FirstOrCreate(&product, entity.Product{
 			Name:        p_temp.Name,
 			Description: p_temp.Description,
 			Price:       p_temp.Price,

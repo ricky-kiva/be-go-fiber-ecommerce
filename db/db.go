@@ -1,7 +1,7 @@
 package db
 
 import (
-	"be-go-fiber-ecommerce/models"
+	"be-go-fiber-ecommerce/entity"
 	"log"
 	"os"
 
@@ -24,11 +24,11 @@ func InitDb() *gorm.DB {
 
 func migrateDB(db *gorm.DB) {
 	db.AutoMigrate(
-		&models.Product{},
-		&models.Category{},
-		&models.User{},
-		&models.Cart{},
-		&models.CartItem{},
+		&entity.Product{},
+		&entity.Category{},
+		&entity.User{},
+		&entity.Cart{},
+		&entity.CartItem{},
 	)
 
 	SeedData(db)

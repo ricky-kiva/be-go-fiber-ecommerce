@@ -1,13 +1,13 @@
 package handler
 
 import (
-	"be-go-fiber-ecommerce/models"
+	"be-go-fiber-ecommerce/entity"
 
 	"github.com/gofiber/fiber/v2"
 )
 
 func (h *Handler) GetAllProducts(c *fiber.Ctx) error {
-	var products []models.Product
+	var products []entity.Product
 
 	if result := h.DB.Find(&products); result.Error != nil {
 		c.Status(fiber.StatusInternalServerError).JSON(result.Error)
@@ -17,7 +17,7 @@ func (h *Handler) GetAllProducts(c *fiber.Ctx) error {
 }
 
 func (h *Handler) GetProductById(c *fiber.Ctx) error {
-	var product models.Product
+	var product entity.Product
 
 	productId := c.Query("id")
 	if productId == "" {
@@ -36,7 +36,7 @@ func (h *Handler) GetProductById(c *fiber.Ctx) error {
 }
 
 func (h *Handler) GetProductsByCategoryId(c *fiber.Ctx) error {
-	var products []models.Product
+	var products []entity.Product
 
 	categoryId := c.Params("categoryId")
 	if result := h.DB.Where("category_id = ?", categoryId).Find(&products); result.Error != nil {
@@ -47,7 +47,7 @@ func (h *Handler) GetProductsByCategoryId(c *fiber.Ctx) error {
 }
 
 func (h *Handler) GetAllCategories(c *fiber.Ctx) error {
-	var categories []models.Category
+	var categories []entity.Category
 
 	if result := h.DB.Find(&categories); result.Error != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(result.Error)

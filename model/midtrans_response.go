@@ -1,4 +1,4 @@
-package web
+package model
 
 type MidtransResponse struct {
 	Token       string `json:"token"`

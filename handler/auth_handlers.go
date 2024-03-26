@@ -1,7 +1,8 @@
 package handler
 
 import (
-	"be-go-fiber-ecommerce/models"
+	"be-go-fiber-ecommerce/entity"
+	"be-go-fiber-ecommerce/model"
 	"os"
 	"strings"
 	"time"
@@ -42,7 +43,7 @@ func (h *Handler) UserRegister(c *fiber.Ctx) error {
 		})
 	}
 
-	user := models.User{
+	user := entity.User{
 		Email:    data["email"],
 		Password: hashedPassword,
 	}
@@ -69,7 +70,7 @@ func (h *Handler) UserLogin(c *fiber.Ctx) error {
 		})
 	}
 
-	var user models.User
+	var user entity.User
 
 	result := h.DB.Where("email = ?", data["email"]).First(&user)
 	if result.Error != nil {
@@ -92,7 +93,7 @@ func (h *Handler) UserLogin(c *fiber.Ctx) error {
 		IssuedAt:  jwt.NewNumericDate(time.Now()),
 	}
 
-	newClaims := models.UserClaims{
+	newClaims := model.UserClaims{
 		RegisteredClaims: claims,
 		UserID:           user.ID,
 	}
