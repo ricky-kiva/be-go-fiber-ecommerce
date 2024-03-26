@@ -1,19 +1,16 @@
-package auth
+package handler
 
 import (
 	"be-go-fiber-ecommerce/models"
 	"os"
-	"regexp"
 	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/jinzhu/gorm"
-	"golang.org/x/crypto/bcrypt"
 )
 
-func RegisterHandler(c *fiber.Ctx, db *gorm.DB) error {
+func (h *Handler) UserRegister(c *fiber.Ctx) error {
 	var data map[string]string
 
 	if err := c.BodyParser(&data); err != nil {
@@ -47,7 +44,7 @@ func RegisterHandler(c *fiber.Ctx, db *gorm.DB) error {
 		Password: hashedPassword,
 	}
 
-	result := db.Create(&user)
+	result := h.DB.Create(&user)
 
 	if result.Error != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -59,7 +56,7 @@ func RegisterHandler(c *fiber.Ctx, db *gorm.DB) error {
 	return c.Status(fiber.StatusCreated).JSON(user)
 }
 
-func LoginHandler(c *fiber.Ctx, db *gorm.DB) error {
+func (h *Handler) UserLogin(c *fiber.Ctx) error {
 	var data map[string]string
 
 	if err := c.BodyParser(&data); err != nil {
@@ -68,7 +65,7 @@ func LoginHandler(c *fiber.Ctx, db *gorm.DB) error {
 
 	var user models.User
 
-	result := db.Where("email = ?", data["email"]).First(&user)
+	result := h.DB.Where("email = ?", data["email"]).First(&user)
 	if result.Error != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"status":  "fail",
@@ -84,12 +81,12 @@ func LoginHandler(c *fiber.Ctx, db *gorm.DB) error {
 	}
 
 	claims := jwt.RegisteredClaims{
-		ExpiresAt: jwt.NewNumericDate(time.Now().Add(2 * time.Minute)),
+		ExpiresAt: jwt.NewNumericDate(time.Now().Add(5 * time.Minute)),
 		Issuer:    "rickyslash.my.id",
 		IssuedAt:  jwt.NewNumericDate(time.Now()),
 	}
 
-	newClaims := UserClaims{
+	newClaims := models.UserClaims{
 		RegisteredClaims: claims,
 		UserID:           user.ID,
 	}
@@ -107,19 +104,4 @@ func LoginHandler(c *fiber.Ctx, db *gorm.DB) error {
 	}
 
 	return c.JSON(fiber.Map{"token": token})
-}
-
-func hashPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
-	return string(bytes), err
-}
-
-func checkPasswordHash(password, hash string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-	return err == nil
-}
-
-func isEmailValid(s string) bool {
-	emailRegex := regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}$`)
-	return emailRegex.MatchString(s)
 }

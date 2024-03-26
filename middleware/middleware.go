@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"be-go-fiber-ecommerce/auth"
+	"be-go-fiber-ecommerce/models"
 	"fmt"
 	"os"
 	"strings"
@@ -47,7 +47,7 @@ func AuthUserIdExtraction(c *fiber.Ctx) error {
 
 	tokenString := strings.TrimPrefix(authValue, bearerPrefix)
 
-	token, err := jwt.ParseWithClaims(tokenString, &auth.UserClaims{}, func(t *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &models.UserClaims{}, func(t *jwt.Token) (interface{}, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
 		}
@@ -62,7 +62,7 @@ func AuthUserIdExtraction(c *fiber.Ctx) error {
 		})
 	}
 
-	if claims, ok := token.Claims.(*auth.UserClaims); ok && token.Valid {
+	if claims, ok := token.Claims.(*models.UserClaims); ok && token.Valid {
 		c.Locals("userID", claims.UserID)
 		return c.Next()
 	} else {
