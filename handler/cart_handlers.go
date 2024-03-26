@@ -2,7 +2,7 @@ package handler
 
 import (
 	"be-go-fiber-ecommerce/entity"
-	// "be-go-fiber-ecommerce/model"
+	"be-go-fiber-ecommerce/model"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/jinzhu/gorm"
@@ -149,16 +149,29 @@ func (h *Handler) DeleteCartItem(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusNoContent).Send(nil)
 }
 
-// func (h *Handler) Checkout(c *fiber.Ctx) error {
-// 	userId := c.Locals("userID").(uint)
+func (h *Handler) Checkout(c *fiber.Ctx) error {
+	userId := c.Locals("userID").(uint)
 
-// 	var user entity.User
-// 	if err := h.DB.Preload("Cart.Items.Product").First(&user, userId).Error; err != nil {
-// 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-// 			"status": "error",
-// 			"message": err.Error(),
-// 		})
-// 	}
+	var user entity.User
+	if err := h.DB.Preload("Cart.Items.Product").First(&user, userId).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"status":  "error",
+			"message": err.Error(),
+		})
+	}
 
-// 	// response := model.CheckoutItem
-// }
+	checkout := model.CheckoutResponse{}
+	for _, item := range user.Cart.Items {
+		itemDetails := model.CheckoutItem{
+			Name:     item.Product.Name,
+			Quantity: item.Quantity,
+			Price:    int64(item.Product.Price),
+			Total:    int64(item.Quantity) * int64(item.Product.Price),
+		}
+
+		checkout.Items = append(checkout.Items, itemDetails)
+		checkout.Total += itemDetails.Total
+	}
+
+	return c.JSON(checkout)
+}

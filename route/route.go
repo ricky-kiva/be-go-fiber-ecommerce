@@ -26,6 +26,7 @@ func Setup(app *fiber.App, db *gorm.DB) {
 	v1.Get("/cart", middleware.AuthValidator, middleware.AuthUserIdExtraction, h.GetCart)
 	v1.Post("/cart", middleware.AuthValidator, middleware.AuthUserIdExtraction, h.AddToCart)
 	v1.Delete("/cart/items/:productID", middleware.AuthValidator, middleware.AuthUserIdExtraction, h.DeleteCartItem)
+	v1.Get("/cart/checkout", middleware.AuthValidator, middleware.AuthUserIdExtraction, h.Checkout)
 	v1.Get("/cart/pay", middleware.AuthValidator, middleware.AuthUserIdExtraction, midtransController.Pay)
 
 	v1.Get("/products", h.GetAllProducts)
