@@ -104,7 +104,7 @@ func (h *Handler) GetCart(c *fiber.Ctx) error {
 	}
 
 	var cartItems []entity.CartItem
-	if err := h.DB.Where("cart_id = ?", cart.ID).Preload("Product").Find(&cartItems).Error; err != nil {
+	if err := h.DB.Where("cart_id = ?", cart.ID).Preload("Product.Category").Find(&cartItems).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"status":  "error",
 			"message": "Could not load cart items",
