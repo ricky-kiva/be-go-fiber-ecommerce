@@ -59,9 +59,11 @@ DATABASE_URL="postgresql://username:password@localhost/dbname?sslmode=disable"
 ```
 
 3. **Register for a Midtrans Account**
+
 If you haven't already, sign up for a [Midtrans](https://www.midtrans.com/) account. Navigate to the settings section to obtain your `MIDTRANS_SERVER_KEY`.
 
 4. **Configure Environmental Variables**
+
 Within the root directory of your project, create a `.env` file and fill it with your configuration settings:
 
 ```bash
@@ -71,7 +73,17 @@ MIDTRANS_SERVER_KEY="YOUR_MIDTRANS_SERVER_KEY"
 ENV="DEV"
 ```
 
-5. **Install Dependencies**
+5. **Configure Environmental Variables in `docker-compose.yaml` (optional, to run Docker)**
+
+Within the root directory of your project, seek for `docker-compose.yaml`. Go to `be-service.environment` and replace the values with your configuration settings:
+
+```bash
+DATABASE_URL=postgresql://username:password@localhost/dbname?sslmode=disable
+JWT_SECRET=ANY_CUSTOM_KEY
+MIDTRANS_SERVER_KEY=YOUR_MIDTRANS_SERVER_KEY
+```
+
+6. **Install Dependencies**
 
 Execute the following command to install the project dependencies:
 
@@ -81,7 +93,7 @@ go mod tidy
 
 This will download and install the necessary Go modules as specified in your go.mod file.
 
-6. **Launch the Application**
+7. **Launch the Application**
 
 With the setup complete and the database operational, you can start the application by running:
 
@@ -89,7 +101,7 @@ With the setup complete and the database operational, you can start the applicat
 go run main.go
 ```
 
-7. **Interacting with the Backend**
+8. **Interacting with the Backend**
 
 Your server should now be up and running, accessible via `http://localhost:3000` or another port if configured differently.
 
