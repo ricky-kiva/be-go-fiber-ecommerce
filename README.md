@@ -190,8 +190,26 @@ POST /v1/users/login
 
 Upon successful login, you'll receive a JWT token in the response. Use this token in the `Authorization` header for subsequent requests that require authentication.
 
-This section aims to provide you with a basic understanding of how to use the API. For detailed information about each endpoint, refer to the Endpoints section.
+### Endpoints
 
+Below is a list of all available endpoints with brief descriptions.
+
+| Method | Endpoint                        | Description                                                    |
+|--------|---------------------------------|----------------------------------------------------------------|
+| GET    | `/`                             | Displays information about the project.                        |
+| POST   | `/v1/register`                  | Registers a new user.                                          |
+| POST   | `/v1/login`                     | Authenticates a user and returns a token.                      |
+| GET    | `/v1/cart`                      | Retrieves the current user's shopping cart.                    |
+| POST   | `/v1/cart`                      | Adds a new item to the shopping cart.                          |
+| DELETE | `/v1/cart/items/:productID`     | Removes an item from the shopping cart.                        |
+| GET    | `/v1/cart/checkout`             | Processes the checkout for the current user's cart.            |
+| GET    | `/v1/cart/pay`                  | Initiates a payment process for the items in the shopping cart.|
+| GET    | `/v1/products`                  | Retrieves a list of all products.                              |
+| GET    | `/v1/products/info`             | Retrieves details of a specific product by its ID.             |
+| GET    | `/v1/products/categories/:categoryID` | Retrieves a list of products filtered by a specific category ID.|
+| GET    | `/v1/products/categories`       | Retrieves a list of all product categories.                            |
+
+For more detailed information, including request parameters, headers, response objects, and examples, please refer to our: [**Postman API Documentation**](https://www.postman.com/rickyslash/workspace/syn-fish-ecommerce-go-fiber/documentation/26442482-22509c1c-ad14-4182-9aa2-5ebc91b17cd6)
 
 ## Example
 
