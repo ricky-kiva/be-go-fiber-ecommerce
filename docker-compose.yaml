@@ -20,9 +20,9 @@ services:
     ports:
       - 8080:8080
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres_pw@db/fiber_ecommerce?sslmode=disable
-      - JWT_SECRET=secret
-      - MIDTRANS_SERVER_KEY=SB-Mid-server-PeRQ8mZ7zF58-oE7Y3Y3fbet
+      - DATABASE_URL=${DATABESE_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - MIDTRANS_SERVER_KEY=${MIDTRANS_SERVER_KEY}
       - ENV=PROD
     restart: always
     depends_on:
