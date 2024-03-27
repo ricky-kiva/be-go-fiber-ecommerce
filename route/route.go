@@ -11,6 +11,8 @@ import (
 )
 
 func Setup(app *fiber.App, db *gorm.DB) {
+	app.Use(middleware.CORS())
+
 	h := handler.New(db)
 
 	v1 := app.Group("/v1")

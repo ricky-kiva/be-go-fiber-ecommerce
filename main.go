@@ -4,6 +4,8 @@ import (
 	"be-go-fiber-ecommerce/db"
 	"be-go-fiber-ecommerce/initializer"
 	"be-go-fiber-ecommerce/route"
+	"log"
+	"os"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -18,5 +20,12 @@ func main() {
 
 	route.Setup(app, db)
 
-	app.Listen(":8080")
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
+	if err := app.Listen(":" + port); err != nil {
+		log.Panicf("error: %s", err)
+	}
 }
