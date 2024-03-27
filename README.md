@@ -68,6 +68,7 @@ Within the root directory of your project, create a `.env` file and fill it with
 DATABASE_URL="postgresql://username:password@localhost/dbname?sslmode=disable"
 JWT_SECRET="ANY_CUSTOM_KEY"
 MIDTRANS_SERVER_KEY="YOUR_MIDTRANS_SERVER_KEY"
+ENV="DEV"
 ```
 
 5. **Install Dependencies**
