@@ -55,3 +55,38 @@ func (h *Handler) GetAllCategories(c *fiber.Ctx) error {
 
 	return c.JSON(categories)
 }
+
+func (h *Handler) UpdateProduct(c *fiber.Ctx) error {
+	productId, err := c.ParamsInt("id")
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"status":  "error",
+			"message": "Invalid product ID",
+		})
+	}
+
+	updateData := make(map[string]interface{})
+	if err := c.BodyParser(&updateData); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"status":  "error",
+			"message": "Error parsing request data",
+		})
+	}
+
+	var product entity.Product
+	if err := h.DB.First(&product, productId).Error; err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"status":  "error",
+			"message": "Product not found",
+		})
+	}
+
+	if result := h.DB.Model(&product).Updates(updateData); result.Error != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"status":  "error",
+			"message": "Could not update product",
+		})
+	}
+
+	return c.JSON(product)
+}

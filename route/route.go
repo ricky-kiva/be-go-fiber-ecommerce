@@ -31,6 +31,7 @@ func Setup(app *fiber.App, db *gorm.DB) {
 
 	v1.Get("/products", h.GetAllProducts)
 	v1.Get("/products/info", h.GetProductById)
+	v1.Put("/products/:id", h.UpdateProduct)
 	v1.Get("/products/categories/:categoryId", h.GetProductsByCategoryId)
 	v1.Get("/products/categories", h.GetAllCategories)
 }
