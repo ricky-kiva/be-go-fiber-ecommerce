@@ -134,8 +134,24 @@ Content-Type: application/json
 
 Ensure the email is valid and the password meets the specified criteria.
 
+- **PUT**
+Example, to update a product's information:
+
+```plaintext
+PUT /v1/products/:productId
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN
+
+{
+  "name": "Updated Product Name",
+  "price": 20.99
+}
+```
+
+Replace :productId with the product ID you wish to update. The request body should contain the updated product data. This endpoint requires authentication.
+
 - **DELETE**
-example, to delete an item from the shopping cart:
+Example, to delete an item from the shopping cart:
 
 ```plaintext
 DELETE /v1/cart/:productId
