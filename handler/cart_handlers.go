@@ -31,6 +31,13 @@ func (h *Handler) AddToCart(c *fiber.Ctx) error {
 		})
 	}
 
+	if cartInput.Quantity > product.Stock {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"status":  "fail",
+			"message": "Quantity exceeds available stock",
+		})
+	}
+
 	var cart entity.Cart
 	if err := h.DB.FirstOrCreate(&cart, entity.Cart{UserID: userId}).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
