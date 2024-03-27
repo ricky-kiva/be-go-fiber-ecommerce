@@ -24,7 +24,6 @@ func NewMidTransServiceImpl(db *gorm.DB) *MidtransServiceImpl {
 }
 
 func (service *MidtransServiceImpl) CartTransaction(c *fiber.Ctx) (model.MidtransResponse, error) {
-	var totalGross int64
 	userId := c.Locals("userID").(uint)
 
 	var user entity.User
@@ -32,6 +31,14 @@ func (service *MidtransServiceImpl) CartTransaction(c *fiber.Ctx) (model.Midtran
 		return model.MidtransResponse{}, fmt.Errorf("user not found or Cart haven't initialized")
 	}
 
+	tx := service.DB.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	var totalGross int64
 	itemsDetails := make([]midtrans.ItemDetails, 0)
 	for _, item := range user.Cart.Items {
 		totalGross += int64(item.Quantity) * int64(item.Product.Price)
@@ -43,6 +50,17 @@ func (service *MidtransServiceImpl) CartTransaction(c *fiber.Ctx) (model.Midtran
 			Qty:      int32(item.Quantity),
 			Category: item.Product.Category.Name,
 		})
+
+		newStock := item.Product.Stock - item.Quantity
+		if newStock < 0 {
+			tx.Rollback()
+			return model.MidtransResponse{}, fmt.Errorf("not enough stock for product: %s", item.Product.Name)
+		}
+
+		if err := tx.Model(&entity.Product{}).Where("id = ?", item.ProductID).Update("stock", newStock).Error; err != nil {
+			tx.Rollback()
+			return model.MidtransResponse{}, fmt.Errorf("update error (product: %s): %w", item.Product.Name, err)
+		}
 	}
 
 	orderSuffix := fmt.Sprintf("%d", time.Now().UnixNano())
@@ -82,11 +100,17 @@ func (service *MidtransServiceImpl) CartTransaction(c *fiber.Ctx) (model.Midtran
 
 	response, errSnap := snapClient.CreateTransaction(req)
 	if errSnap != nil {
+		tx.Rollback()
 		return model.MidtransResponse{}, fmt.Errorf(errSnap.Message)
 	}
 
-	if err := service.DB.Where("cart_id = ?", user.Cart.ID).Delete(&entity.CartItem{}).Error; err != nil {
+	if err := tx.Where("cart_id = ?", user.Cart.ID).Delete(&entity.CartItem{}).Error; err != nil {
+		tx.Rollback()
 		return model.MidtransResponse{}, fmt.Errorf("error clearing cart items")
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		return model.MidtransResponse{}, fmt.Errorf("transaction commit error: %w", err)
 	}
 
 	midtransResponse := model.MidtransResponse{
