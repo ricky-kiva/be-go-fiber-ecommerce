@@ -1,0 +1,29 @@
+version: "3.8"
+
+services:
+  db:
+    image: postgres:14-alpine
+    container_name: postgresql-ecommerce
+    ports:
+      - 5444:5432
+    volumes:
+      - ./db-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=postgres_pw
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=fiber_ecommerce
+    restart: unless-stopped
+  
+  be-service:
+    image: rickyslash/fiber-ecommerce:1.0.0
+    container_name: ecommerce-service
+    ports:
+      - 8080:8080
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres_pw@db/fiber_ecommerce?sslmode=disable
+      - JWT_SECRET=secret
+      - MIDTRANS_SERVER_KEY=SB-Mid-server-PeRQ8mZ7zF58-oE7Y3Y3fbet
+      - ENV=PROD
+    restart: always
+    depends_on:
+      - db
