@@ -17,5 +17,6 @@ func (h *Handler) AboutProject(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{
 		"Project": "Fish E-Commerce",
 		"Dev":     "Rickyslash",
+		"To":      "Synapsis.id",
 	})
 }
